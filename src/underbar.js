@@ -7,6 +7,7 @@
   // seem very useful, but remember it--if a function needs to provide an
   // iterator when the user does not pass one in, this will be handy.
   _.identity = function(val) {
+  	return val;
   };
 
   /**
@@ -99,12 +100,24 @@
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
   	var uniques = [];
+  	var manip = [];
 
-  	_.each(array, function(ele) {
-  		if (!uniques.includes(ele)) {
+  	
+
+  	if (isSorted && arguments.length === 3) {
+  		_.each(array, function(ele) {
+        if(_.indexOf(manip, iterator(ele)) === -1) {
+          manip.push(iterator(ele));
+          uniques.push(ele);
+        }
+      });
+  	} else {
+  		_.each(array, function(ele) {
+  		if (_.indexOf(uniques, ele) === -1) {
   			uniques.push(ele);
   		}
   	});
+  	}
   	return uniques;
   };
 
@@ -116,8 +129,7 @@
     // the members, it also maintains an array of results.
     var mappedValues = [];
   	_.each(collection, function(ele) {
-  		var x = iterator(ele);
-  		mappedValues.push(x);
+  		mappedValues.push(iterator(ele));
   	})
   	return mappedValues;  
 
@@ -162,6 +174,16 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+  	var initVal = arguments.length < 3 ? 1 : 0;
+
+  	if (arguments.length < 3) {
+  		accumulator = collection[0];	
+  	}
+  	
+  	for (var i = initVal; i < collection.length; i++) {
+  		accumulator = iterator(accumulator, collection[i]);
+  	}
+  	return accumulator;
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -179,7 +201,12 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
-    // TIP: Try re-using reduce() here.
+    return _.reduce(collection, function (flag, ele) {
+    	if (flag === false) {
+    		return flag;
+    	}
+    	return iterator(ele);
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
